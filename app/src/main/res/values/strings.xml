@@ -3,4 +3,5 @@
     <string name="menu_sort">Sort</string>
     <string name="menu_sort_popular">Popular</string>
     <string name="menu_sort_toprated">Top Rated</string>
+    <string name="title_activity_detail_movie">DetailMovieActivity</string>
 </resources>
