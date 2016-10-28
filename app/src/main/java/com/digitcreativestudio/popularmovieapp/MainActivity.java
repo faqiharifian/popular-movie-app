@@ -1,5 +1,6 @@
 package com.digitcreativestudio.popularmovieapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -41,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         movieAdapter = new MovieAdapter(MainActivity.this, movieList, new MovieAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Movie movie) {
+                Intent intent = new Intent(MainActivity.this, DetailMovieActivity.class);
+                intent.putExtra("movie", movie);
+                startActivity(intent);
                 Toast.makeText(MainActivity.this, "Movie clicked "+movie.getTitle(), Toast.LENGTH_SHORT).show();
             }
         });
