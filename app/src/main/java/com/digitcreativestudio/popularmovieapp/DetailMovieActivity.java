@@ -5,6 +5,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
 
@@ -17,6 +18,9 @@ public class DetailMovieActivity extends AppCompatActivity {
 
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbarLayout;
     @BindView(R.id.backdrop_imageview) ImageView backdropImageView;
+    @BindView(R.id.title_textview) TextView titleTextView;
+    @BindView(R.id.rate_textview) TextView rateTextView;
+    @BindView(R.id.overview_textview) TextView overviewTextView;
 
     @BindColor(android.R.color.transparent) int transparent;
 
@@ -35,6 +39,9 @@ public class DetailMovieActivity extends AppCompatActivity {
         collapsingToolbarLayout.setTitle(mMovie.getTitle());
         collapsingToolbarLayout.setExpandedTitleColor(transparent);
 
+        titleTextView.setText(mMovie.getTitle());
+        rateTextView.setText(String.valueOf(mMovie.getVoteAverage()));
+        overviewTextView.setText(mMovie.getOverview());
     }
 
 }
