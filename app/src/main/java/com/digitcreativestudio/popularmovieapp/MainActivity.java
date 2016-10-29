@@ -8,18 +8,27 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.digitcreativestudio.popularmovieapp.adapter.MovieAdapter;
+import com.digitcreativestudio.popularmovieapp.connection.TmdbClient;
+import com.digitcreativestudio.popularmovieapp.connection.TmdbService;
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
+import com.digitcreativestudio.popularmovieapp.parser.MovieListParser;
 
 import java.util.ArrayList;
 
+import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.movie_recyclerview) RecyclerView movieRV;
+
+    @BindString(R.string.popular_title) String popularTitle;
+    @BindString(R.string.toprated_title) String topRatedTitle;
 
     private RecyclerView.LayoutManager mLayoutManager;
     private MovieAdapter movieAdapter;
@@ -45,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, DetailMovieActivity.class);
                 intent.putExtra("movie", movie);
                 startActivity(intent);
-                Toast.makeText(MainActivity.this, "Movie clicked "+movie.getTitle(), Toast.LENGTH_SHORT).show();
             }
         });
         movieRV.setAdapter(movieAdapter);
@@ -64,10 +72,12 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.sort_popular:
                 mType = "popular";
+                setTitle(popularTitle);
                 getMovieList();
                 break;
             case R.id.sort_toprated:
                 mType = "toprated";
+                setTitle(topRatedTitle);
                 getMovieList();
                 break;
         }
@@ -78,29 +88,29 @@ public class MainActivity extends AppCompatActivity {
     private void getMovieList(){
         movieList.clear();
         movieAdapter.notifyDataSetChanged();
-        if(mType.equals("toprated")){
-            for(int i = 0; i < 50; i++){
-                Movie movie = new Movie();
-                movie.setTitle("Title movie "+i+" TOP RATED");
-                movie.setPosterPath("Poster path "+i+" TOP RATED");
-                movie.setBackdropPath("Backdrop path "+i+" TOP RATED");
-                movie.setOverview("Overview movie "+i+" TOP RATED");
-                movie.setVoteCount(i);
-                movie.setVoteAverage(i);
-                movieList.add(movie);
-            }
-        }else{
-            for(int i = 0; i < 50; i++){
-                Movie movie = new Movie();
-                movie.setTitle("Title movie "+i+" POPULAR");
-                movie.setPosterPath("Poster path "+i+" POPULAR");
-                movie.setBackdropPath("Backdrop path "+i+" POPULAR");
-                movie.setOverview("Overview movie "+i+" POPULAR");
-                movie.setVoteCount(i);
-                movie.setVoteAverage(i);
-                movieList.add(movie);
-            }
+        TmdbService tmdbService =
+                TmdbClient.getClient().create(TmdbService.class);
+
+        Call<MovieListParser> movieListCall;
+        if (mType.equals("toprated")) {
+            movieListCall = tmdbService.getTopRated();
+        } else {
+            movieListCall = tmdbService.getPopular();
         }
-        movieAdapter.notifyDataSetChanged();
+
+        movieListCall.enqueue(new Callback<MovieListParser>() {
+            @Override
+            public void onResponse(Call<MovieListParser> call, Response<MovieListParser> response) {
+                if(response.code() == 200) {
+                    movieList.addAll(response.body().getMovies());
+
+                    movieAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MovieListParser> call, Throwable t) {
+            }
+        });
     }
 }
