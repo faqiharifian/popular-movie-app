@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
+import com.squareup.picasso.Picasso;
 
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -18,6 +19,7 @@ public class DetailMovieActivity extends AppCompatActivity {
 
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbarLayout;
     @BindView(R.id.backdrop_imageview) ImageView backdropImageView;
+    @BindView(R.id.poster_imageview) ImageView posterImageView;
     @BindView(R.id.title_textview) TextView titleTextView;
     @BindView(R.id.rate_textview) TextView rateTextView;
     @BindView(R.id.overview_textview) TextView overviewTextView;
@@ -42,6 +44,16 @@ public class DetailMovieActivity extends AppCompatActivity {
         titleTextView.setText(mMovie.getTitle());
         rateTextView.setText(String.valueOf(mMovie.getVoteAverage()));
         overviewTextView.setText(mMovie.getOverview());
+
+        Picasso.with(this)
+                .load("http://image.tmdb.org/t/p/w92"+mMovie.getPosterPath())
+                .into(posterImageView);
+
+        Picasso.with(this)
+                .load("http://image.tmdb.org/t/p/w300"+mMovie.getBackdropPath())
+                .fit()
+                .centerCrop()
+                .into(backdropImageView);
     }
 
 }
