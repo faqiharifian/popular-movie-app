@@ -5,6 +5,11 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Created by faqiharifian on 27/10/16.
  */
@@ -45,8 +50,14 @@ public class Movie implements Parcelable {
         return backdropPath;
     }
 
-    public String getReleaseDate() {
-        return releaseDate;
+    public Date getReleaseDate() {
+        try{
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            return simpleDateFormat.parse(releaseDate);
+        }catch (ParseException pe){
+            pe.printStackTrace();
+        }
+        return null;
     }
 
     public float getPopularity() {

@@ -7,4 +7,6 @@
     <string name="subtitle_overview">OVERVIEW</string>
     <string name="popular_title">Popular Movies</string>
     <string name="toprated_title">Top Rated Movies</string>
+    <string name="subtitle_videos">Videos</string>
+    <string name="subtitle_reviews">Reviews</string>
 </resources>

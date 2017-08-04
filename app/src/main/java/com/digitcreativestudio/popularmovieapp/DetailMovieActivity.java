@@ -1,30 +1,55 @@
 package com.digitcreativestudio.popularmovieapp;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.digitcreativestudio.popularmovieapp.adapter.VideoAdapter;
+import com.digitcreativestudio.popularmovieapp.connection.TmdbClient;
+import com.digitcreativestudio.popularmovieapp.connection.TmdbService;
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
+import com.digitcreativestudio.popularmovieapp.entity.Video;
+import com.digitcreativestudio.popularmovieapp.parser.VideoParser;
 import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DetailMovieActivity extends AppCompatActivity {
     Movie mMovie;
+    ArrayList<Video> videos = new ArrayList<>();
+    VideoAdapter videoAdapter;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
 
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbarLayout;
     @BindView(R.id.backdrop_imageview) ImageView backdropImageView;
     @BindView(R.id.poster_imageview) ImageView posterImageView;
     @BindView(R.id.title_textview) TextView titleTextView;
+    @BindView(R.id.release_textview) TextView releaseTextView;
     @BindView(R.id.rate_textview) TextView rateTextView;
     @BindView(R.id.overview_textview) TextView overviewTextView;
+    @BindView(R.id.videos_recyclerview) RecyclerView videosRecyclerView;
 
     @BindColor(android.R.color.transparent) int transparent;
+
+    RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +68,26 @@ public class DetailMovieActivity extends AppCompatActivity {
 
         titleTextView.setText(mMovie.getTitle());
         rateTextView.setText(String.valueOf(mMovie.getVoteAverage()));
+        releaseTextView.setText(dateFormat.format(mMovie.getReleaseDate()));
         overviewTextView.setText(mMovie.getOverview());
+
+        layoutManager = new GridLayoutManager(this, 2);
+        videosRecyclerView.setLayoutManager(layoutManager);
+        videoAdapter = new VideoAdapter(this, videos, new VideoAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Video video) {
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + video.getKey()));
+                Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://www.youtube.com/watch?v=" + video.getKey()));
+                try {
+                    startActivity(appIntent);
+                } catch (ActivityNotFoundException ex) {
+                    startActivity(webIntent);
+                }
+            }
+        });
+        videosRecyclerView.setAdapter(videoAdapter);
+        videosRecyclerView.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 2));
 
         Picasso.with(this)
                 .load("http://image.tmdb.org/t/p/w92"+mMovie.getPosterPath())
@@ -54,6 +98,30 @@ public class DetailMovieActivity extends AppCompatActivity {
                 .fit()
                 .centerCrop()
                 .into(backdropImageView);
+
+        getVideos();
     }
 
+    private void getVideos(){
+        TmdbService service = TmdbClient.getClient().create(TmdbService.class);
+
+        Call<VideoParser> call = service.getVideos(mMovie.getId());
+        call.enqueue(new Callback<VideoParser>() {
+            @Override
+            public void onResponse(Call<VideoParser> call, Response<VideoParser> response) {
+                if(response.code() == 200) {
+                    List<Video> videos = response.body().getVideos();
+                    DetailMovieActivity.this.videos.clear();
+                    DetailMovieActivity.this.videos.addAll(videos);
+
+                    videoAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<VideoParser> call, Throwable t) {
+
+            }
+        });
+    }
 }
