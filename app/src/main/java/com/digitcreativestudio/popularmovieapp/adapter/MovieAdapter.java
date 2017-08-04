@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.digitcreativestudio.popularmovieapp.R;
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
@@ -49,9 +48,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
         final Movie item = arrayList.get(position);
         holder.bind(arrayList.get(position), listener);
 
-        holder.title.setText(item.getTitle());
-        holder.vote.setText(String.valueOf(item.getVoteAverage()));
-
         Picasso.with(context)
                 .load("http://image.tmdb.org/t/p/w92"+item.getPosterPath())
                 .into(holder.poster);
@@ -69,8 +65,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private View parentView;
-        @BindView(R.id.movie_title_textview) TextView title;
-        @BindView(R.id.movie_vote_textview) TextView vote;
         @BindView(R.id.movie_poster_imageview) ImageView poster;
 
         public MyViewHolder(View view) {

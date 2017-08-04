@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
         movieList = new ArrayList<>();
 
-        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mLayoutManager = new GridLayoutManager(this, 2);
         movieRV.setLayoutManager(mLayoutManager);
         movieRV.setItemAnimator(new DefaultItemAnimator());
         movieAdapter = new MovieAdapter(MainActivity.this, movieList, new MovieAdapter.OnItemClickListener() {
@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        movieRV.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 2));
         movieRV.setAdapter(movieAdapter);
 
         getMovieList();
