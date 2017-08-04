@@ -1,7 +1,9 @@
 package com.digitcreativestudio.popularmovieapp;
 
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -10,6 +12,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,6 +22,7 @@ import com.digitcreativestudio.popularmovieapp.adapter.ReviewAdapter;
 import com.digitcreativestudio.popularmovieapp.adapter.VideoAdapter;
 import com.digitcreativestudio.popularmovieapp.connection.TmdbClient;
 import com.digitcreativestudio.popularmovieapp.connection.TmdbService;
+import com.digitcreativestudio.popularmovieapp.db.DBContract;
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
 import com.digitcreativestudio.popularmovieapp.entity.Review;
 import com.digitcreativestudio.popularmovieapp.entity.Video;
@@ -57,6 +63,9 @@ public class DetailMovieActivity extends AppCompatActivity {
     @BindColor(android.R.color.transparent) int transparent;
 
     RecyclerView.LayoutManager videoLayoutManager, reviewLayoutManager;
+
+    boolean isFavorite = false;
+    Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +122,48 @@ public class DetailMovieActivity extends AppCompatActivity {
 
         getVideos();
         getReviews();
+
+        Cursor cursor = getContentResolver().query(DBContract.FavoriteEntry.appendId(mMovie.getId()), null, null, null, null);
+        if(cursor != null)
+            isFavorite = cursor.getCount() > 0;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_detail, menu);
+        this.menu = menu;
+        menu.getItem(0).setVisible(isFavorite);
+        menu.getItem(1).setVisible(!isFavorite);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                onBackPressed();
+                break;
+            case R.id.action_favorite_on:
+                getContentResolver().delete(DBContract.FavoriteEntry.appendId(mMovie.getId()), null, null);
+                isFavorite = false;
+                break;
+            case R.id.action_favorite_off:
+                ContentValues cv = new ContentValues();
+                cv.put(DBContract.FavoriteEntry._ID, mMovie.getId());
+                cv.put(DBContract.FavoriteEntry.COLUMN_TITLE, mMovie.getTitle());
+                cv.put(DBContract.FavoriteEntry.COLUMN_POSTER_PATH, mMovie.getPosterPath());
+                cv.put(DBContract.FavoriteEntry.COLUMN_BACKDROP_PATH, mMovie.getBackdropPath());
+                cv.put(DBContract.FavoriteEntry.COLUMN_RELEASE_DATE, mMovie.getOriginalReleaseDate());
+                cv.put(DBContract.FavoriteEntry.COLUMN_OVERVIEW, mMovie.getOverview());
+                cv.put(DBContract.FavoriteEntry.COLUMN_VOTE_AVERAGE, mMovie.getVoteAverage());
+                getContentResolver().insert(DBContract.FavoriteEntry.getUri(), cv);
+                isFavorite = true;
+                break;
+        }
+        menu.getItem(0).setVisible(isFavorite);
+        menu.getItem(1).setVisible(!isFavorite);
+        return true;
     }
 
     private void getVideos(){

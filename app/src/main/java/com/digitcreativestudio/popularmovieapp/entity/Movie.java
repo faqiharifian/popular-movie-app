@@ -50,6 +50,10 @@ public class Movie implements Parcelable {
         return backdropPath;
     }
 
+    public String getOriginalReleaseDate() {
+        return releaseDate;
+    }
+
     public Date getReleaseDate() {
         try{
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());

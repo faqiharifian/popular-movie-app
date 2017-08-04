@@ -9,4 +9,5 @@
     <string name="toprated_title">Top Rated Movies</string>
     <string name="subtitle_videos">Videos</string>
     <string name="subtitle_reviews">Reviews</string>
+    <string name="menu_favourite">Favourite</string>
 </resources>

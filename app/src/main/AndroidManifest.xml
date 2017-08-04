@@ -29,6 +29,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.digitcreativestudio.popularmovieapp.MainActivity" />
         </activity>
+        <provider
+            android:authorities="com.digitcreativestudio.popularmovieapp"
+            android:name=".db.DBProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
