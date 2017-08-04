@@ -10,7 +10,7 @@ import com.digitcreativestudio.popularmovieapp.db.DBContract.*;
  */
 
 public class DBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "movie.db";
 
     private static final String SQL_CREATE_FAVORITE =
@@ -21,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     FavoriteEntry.COLUMN_BACKDROP_PATH + " TEXT NULLABLE," +
                     FavoriteEntry.COLUMN_RELEASE_DATE + " TEXT NULLABLE," +
                     FavoriteEntry.COLUMN_OVERVIEW + " TEXT NULLABLE," +
-                    FavoriteEntry.COLUMN_VOTE_AVERAGE + " TEXT NULLABLE)";
+                    FavoriteEntry.COLUMN_VOTE_AVERAGE + " REAL NULLABLE)";
 
     private static final String SQL_DELETE_FAVORITE =
             "DROP TABLE IF EXISTS " + FavoriteEntry.TABLE_NAME;

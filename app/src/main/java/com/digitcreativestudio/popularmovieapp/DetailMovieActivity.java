@@ -124,8 +124,10 @@ public class DetailMovieActivity extends AppCompatActivity {
         getReviews();
 
         Cursor cursor = getContentResolver().query(DBContract.FavoriteEntry.appendId(mMovie.getId()), null, null, null, null);
-        if(cursor != null)
+        if(cursor != null) {
             isFavorite = cursor.getCount() > 0;
+            cursor.close();
+        }
     }
 
     @Override
