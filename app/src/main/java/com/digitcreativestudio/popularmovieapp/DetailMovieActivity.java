@@ -7,16 +7,20 @@ import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.digitcreativestudio.popularmovieapp.adapter.ReviewAdapter;
 import com.digitcreativestudio.popularmovieapp.adapter.VideoAdapter;
 import com.digitcreativestudio.popularmovieapp.connection.TmdbClient;
 import com.digitcreativestudio.popularmovieapp.connection.TmdbService;
 import com.digitcreativestudio.popularmovieapp.entity.Movie;
+import com.digitcreativestudio.popularmovieapp.entity.Review;
 import com.digitcreativestudio.popularmovieapp.entity.Video;
+import com.digitcreativestudio.popularmovieapp.parser.ReviewParser;
 import com.digitcreativestudio.popularmovieapp.parser.VideoParser;
 import com.squareup.picasso.Picasso;
 
@@ -35,7 +39,9 @@ import retrofit2.Response;
 public class DetailMovieActivity extends AppCompatActivity {
     Movie mMovie;
     ArrayList<Video> videos = new ArrayList<>();
+    ArrayList<Review> reviews = new ArrayList<>();
     VideoAdapter videoAdapter;
+    ReviewAdapter reviewAdapter;
     SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
 
     @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout collapsingToolbarLayout;
@@ -46,10 +52,11 @@ public class DetailMovieActivity extends AppCompatActivity {
     @BindView(R.id.rate_textview) TextView rateTextView;
     @BindView(R.id.overview_textview) TextView overviewTextView;
     @BindView(R.id.videos_recyclerview) RecyclerView videosRecyclerView;
+    @BindView(R.id.review_recyclerview) RecyclerView reviewRecyclerView;
 
     @BindColor(android.R.color.transparent) int transparent;
 
-    RecyclerView.LayoutManager layoutManager;
+    RecyclerView.LayoutManager videoLayoutManager, reviewLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +78,8 @@ public class DetailMovieActivity extends AppCompatActivity {
         releaseTextView.setText(dateFormat.format(mMovie.getReleaseDate()));
         overviewTextView.setText(mMovie.getOverview());
 
-        layoutManager = new GridLayoutManager(this, 2);
-        videosRecyclerView.setLayoutManager(layoutManager);
+        videoLayoutManager = new GridLayoutManager(this, 2);
+        videosRecyclerView.setLayoutManager(videoLayoutManager);
         videoAdapter = new VideoAdapter(this, videos, new VideoAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Video video) {
@@ -89,6 +96,11 @@ public class DetailMovieActivity extends AppCompatActivity {
         videosRecyclerView.setAdapter(videoAdapter);
         videosRecyclerView.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 2));
 
+        reviewLayoutManager = new LinearLayoutManager(this);
+        reviewRecyclerView.setLayoutManager(reviewLayoutManager);
+        reviewAdapter = new ReviewAdapter(this, reviews);
+        reviewRecyclerView.setAdapter(reviewAdapter);
+
         Picasso.with(this)
                 .load("http://image.tmdb.org/t/p/w92"+mMovie.getPosterPath())
                 .into(posterImageView);
@@ -100,6 +112,7 @@ public class DetailMovieActivity extends AppCompatActivity {
                 .into(backdropImageView);
 
         getVideos();
+        getReviews();
     }
 
     private void getVideos(){
@@ -120,6 +133,29 @@ public class DetailMovieActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<VideoParser> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void getReviews(){
+        TmdbService service = TmdbClient.getClient().create(TmdbService.class);
+
+        Call<ReviewParser> call = service.getReviews(mMovie.getId());
+        call.enqueue(new Callback<ReviewParser>() {
+            @Override
+            public void onResponse(Call<ReviewParser> call, Response<ReviewParser> response) {
+                if(response.code() == 200) {
+                    List<Review> reviews = response.body().getReviews();
+                    DetailMovieActivity.this.reviews.clear();
+                    DetailMovieActivity.this.reviews.addAll(reviews);
+
+                    reviewAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewParser> call, Throwable t) {
 
             }
         });
