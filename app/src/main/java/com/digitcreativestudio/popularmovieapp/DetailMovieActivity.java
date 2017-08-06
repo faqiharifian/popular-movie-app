@@ -77,6 +77,11 @@ public class DetailMovieActivity extends AppCompatActivity {
 
         mMovie = getIntent().getParcelableExtra("movie");
 
+        if(savedInstanceState != null){
+            videos = (ArrayList<Video>) savedInstanceState.getSerializable("videos");
+            reviews = (ArrayList<Review>) savedInstanceState.getSerializable("reviews");
+        }
+
         ButterKnife.bind(this);
 
         collapsingToolbarLayout.setTitle(mMovie.getTitle());
@@ -87,7 +92,10 @@ public class DetailMovieActivity extends AppCompatActivity {
         releaseTextView.setText(dateFormat.format(mMovie.getReleaseDate()));
         overviewTextView.setText(mMovie.getOverview());
 
-        videoLayoutManager = new GridLayoutManager(this, 2);
+        videoLayoutManager = new GridLayoutManager(this, 3);
+        if(getResources().getConfiguration().orientation == 1){
+            videoLayoutManager = new GridLayoutManager(this, 2);
+        }
         videosRecyclerView.setLayoutManager(videoLayoutManager);
         videoAdapter = new VideoAdapter(this, videos, new VideoAdapter.OnItemClickListener() {
             @Override
@@ -103,7 +111,10 @@ public class DetailMovieActivity extends AppCompatActivity {
             }
         });
         videosRecyclerView.setAdapter(videoAdapter);
-        videosRecyclerView.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 2));
+        videosRecyclerView.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 3));
+        if(getResources().getConfiguration().orientation == 1) {
+            videosRecyclerView.addItemDecoration(new SpaceItemDecorator(this, getResources().getDimensionPixelSize(R.dimen.small_margin), 2));
+        }
 
         reviewLayoutManager = new LinearLayoutManager(this);
         reviewRecyclerView.setLayoutManager(reviewLayoutManager);
@@ -120,14 +131,24 @@ public class DetailMovieActivity extends AppCompatActivity {
                 .centerCrop()
                 .into(backdropImageView);
 
-        getVideos();
-        getReviews();
+        if(savedInstanceState == null) {
+            getVideos();
+            getReviews();
+        }
 
         Cursor cursor = getContentResolver().query(DBContract.FavoriteEntry.appendId(mMovie.getId()), null, null, null, null);
         if(cursor != null) {
             isFavorite = cursor.getCount() > 0;
             cursor.close();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("movie", mMovie);
+        outState.putSerializable("videos", videos);
+        outState.putSerializable("reviews", reviews);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
